@@ -31,7 +31,7 @@ class rsyslog::client (
   $log_auth_local = false,
   $custom_config  = undef,
   $custom_params  = undef,
-  $server         = undef,
+  $server         = false,
   $port           = '514',
   $ssl_ca         = undef,
   $preserve_fqdn  = undef

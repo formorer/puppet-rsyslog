@@ -34,17 +34,25 @@ class rsyslog::params {
       $perm_dir               = '0755'
       $spool_dir              = '/var/spool/rsyslog'
       $service_name           = 'rsyslog'
-      $client_conf            = "${rsyslog_d}client.conf"
-      $server_conf            = "${rsyslog_d}server.conf"
+      $client_conf            = 'client'
+      $server_conf            = 'server'
       $ssl                    = false
       $modules                = [
         '$ModLoad imuxsock # provides support for local system logging',
         '$ModLoad imklog   # provides kernel logging support (previously done by rklogd)',
         '#$ModLoad immark  # provides --MARK-- message capability',
       ]
+      $preserve_fqdn          = false
     }
     redhat: {
-      if $::operatingsystemrelease >= 6.0 {
+      if $::operatingsystem == 'Amazon' {
+        $rsyslog_package_name   = 'rsyslog'
+        $mysql_package_name     = 'rsyslog-mysql'
+        $pgsql_package_name     = 'rsyslog-pgsql'
+        $gnutls_package_name    = 'rsyslog-gnutls'
+        $relp_package_name      = false
+      }
+      elsif $::operatingsystemrelease >= 6.0 {
         $rsyslog_package_name   = 'rsyslog'
         $mysql_package_name     = 'rsyslog-mysql'
         $pgsql_package_name     = 'rsyslog-pgsql'
@@ -59,6 +67,7 @@ class rsyslog::params {
       }
       $package_status         = 'latest'
       $rsyslog_d              = '/etc/rsyslog.d/'
+      $purge_rsyslog_d        = false
       $rsyslog_conf           = '/etc/rsyslog.conf'
       $rsyslog_default        = '/etc/sysconfig/rsyslog'
       $default_config_file    = 'rsyslog_default'
@@ -71,8 +80,8 @@ class rsyslog::params {
       $perm_dir               = '0750'
       $spool_dir              = '/var/lib/rsyslog'
       $service_name           = 'rsyslog'
-      $client_conf            = "${rsyslog_d}client.conf"
-      $server_conf            = "${rsyslog_d}server.conf"
+      $client_conf            = 'client'
+      $server_conf            = 'server'
       $ssl                    = false
       $modules                = [
         '$ModLoad imuxsock # provides support for local system logging',
@@ -100,8 +109,8 @@ class rsyslog::params {
       $perm_dir               = '0755'
       $spool_dir              = '/var/spool/syslog'
       $service_name           = 'syslogd'
-      $client_conf            = "${rsyslog_d}client.conf"
-      $server_conf            = "${rsyslog_d}server.conf"
+      $client_conf            = 'client'
+      $server_conf            = 'server'
       $ssl                    = false
       $modules                = [
         '$ModLoad imuxsock # provides support for local system logging',
@@ -133,8 +142,8 @@ class rsyslog::params {
           $perm_dir               = '0755'
           $spool_dir              = '/var/spool/rsyslog'
           $service_name           = 'rsyslog'
-          $client_conf            = "${rsyslog_d}client.conf"
-          $server_conf            = "${rsyslog_d}server.conf"
+          $client_conf            = 'client'
+          $server_conf            = 'server'
           $ssl                    = false
           $modules                = [
             '$ModLoad imuxsock # provides support for local system logging',

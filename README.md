@@ -26,7 +26,6 @@ Manage rsyslog client and server via Puppet
         custom_config  => undef,
         server         => 'log',
         port           => '514',
-        preserve_fqdn  => undef,
     }
 ```
 for read from file
@@ -38,6 +37,62 @@ for read from file
   }
 
 ```
+
+#### Defining custom logging templates
+
+The `log_templates` parameter can be used to set up custom logging templates, which can be used for local and/or remote logging. More detail on template formats can be found in the [rsyslog documentation](http://www.rsyslog.com/doc/rsyslog_conf_templates.html).
+
+The following examples sets up a custom logging template as per [RFC3164fmt](https://www.ietf.org/rfc/rfc3164.txt):
+
+```puppet
+class{'rsyslog::client':
+  log_templates => [
+    {
+      name      => 'RFC3164fmt',
+      template  => '<%PRI%>%TIMESTAMP% %HOSTNAME% %syslogtag%%msg%',
+    },
+  ]
+}
+```
+
+#### Logging to multiple remote servers
+
+The `remote_servers` parameter can be used to set up logging to multiple remote servers which are supplied as a list of key value pairs for each remote. There is an example configuration provided in `./test/multiple_hosts.pp`
+
+Using the `remote_servers` parameter over-rides the other remote sever parameters, and they will not be used in the client configuration file:
+* `log_remote`
+* `remote_type`
+* `server`
+* `port`
+
+The following example sets up three remote logging hosts for the client:
+
+```puppet
+class{'rsyslog::client':
+  remote_servers => [
+    {
+      host => 'logs.example.org',
+    },
+    {
+      port => '55514',
+    },
+    {
+      host      => 'logs.somewhere.com',
+      port      => '555',
+      pattern   => '*.log',
+      protocol  => 'tcp',
+      format    => 'RFC3164fmt',
+    },
+  ]
+}
+```
+
+Each host has the following parameters:
+* *host*: Sets the address or hostname of the remote logging server. Defaults to `localhost`
+* *port*: Sets the port the host is listening on. Defaults to `514`
+* *pattern*: Sets the pattern to match logs. Defaults to `*.*`
+* *protocol*: Sets the protocol. Only recognises TCP and UDP. Defaults to UDP
+* *format*: Sets the log format. Defaults to not specifying log format, which defaults to the format set by `ActionFileDefaultTemplate` in the client configuration.
 
 #### Logging to a MySQL or PostgreSQL database
 
@@ -89,7 +144,7 @@ The following lists all the class parameters this module accepts.
     server_dir                          STRING              Folder where logs will be stored on the server. Defaults to '/srv/log/'
     custom_config                       STRING              Specify your own template to use for server config. Defaults to undef. Example usage: custom_config => 'rsyslog/my_config.erb'
     high_precision_timestamps           true,false          Whether or not to use high precision timestamps.
-    preserve_fqdn                       true,false          Whether or not to preserve the fully qualified domain name when logging.
+    remote_servers                      HASH                Provides a hash of multiple remote logging servers. Check documentation.
 
     RSYSLOG::CLIENT CLASS PARAMETERS    VALUES              DESCRIPTION
     -------------------------------------------------------------------
@@ -99,6 +154,8 @@ The following lists all the class parameters this module accepts.
     log_auth_local                      true,false          Just log auth facility locally. Defaults to false.
     custom_config                       STRING              Specify your own template to use for client config. Defaults to undef. Example usage: custom_config => 'rsyslog/my_config.erb
     server                              STRING              Rsyslog server to log to. Will be used in the client configuration file.
+    log_templates                       HASH                Provides a has defining custom logging templates using the `$template` configuration parameter.
+    actionfiletemplate                  STRING              If set this defines the `ActionFileDefaultTemplate` which sets the default logging format for remote and local logging.
 
     RSYSLOG::DATABASE CLASS PARAMETERS  VALUES              DESCRIPTION
     -------------------------------------------------------------------
